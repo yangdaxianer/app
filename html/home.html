@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0" />
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>黄金屋书城</title>
+    <link rel="stylesheet" type="text/css" href="../css/aui2.1/aui.css" />
+    <link rel="stylesheet" href="../css/shangpin.css">
+    <style>
+        /*.main {
+            position: relative;
+        }*/
+    </style>
+</head>
+
+<body class="main">
+    <div class="head">
+        <header class="aui-bar aui-bar-nav" id="aui-header">
+            <div class="aui-title">黄金屋书城</div>
+            <!-- 分类导航栏 -->
+            <!-- 这是顶部的分类导航栏 -->
+        </header>
+        <div class="aui-tab" id="tab">
+            <div class="aui-tab-item aui-active">武侠</div>
+            <div class="aui-tab-item">科幻</div>
+            <div class="aui-tab-item">社会</div>
+            <div class="aui-tab-item">穿越</div>
+        </div>
+    </div>
+    <!-- 商品区域 -->
+    <div id="wrapper" class="goods-list">
+        <ul id="goodsLists">
+            <!-- <li class="goods">
+                <div class="thumb">
+                    <img src="../image/803202374.jpg" alt="图片">
+                </div>
+                <div class="goods-info">
+                    <p class="goods-title">这是商品名称</p>
+                    <p class="goods-num">作者</p>
+                    <p class="goods-price">价格</p>
+                    <p>
+                        <div class="aui-btn aui-btn-info addCar" onclick="addCar()">加入购物车</div>
+                    </p>
+                </div>
+            </li> -->
+        </ul>
+    </div>
+
+    <script type="text/javascript" src="../script/api.js"></script>
+    <script type="text/javascript" src="../script/aui2.1/aui-tab.js"></script>
+    <script type="text/javascript" src="../script/aui2.1/aui-dialog.js"></script>
+    <script type="text/javascript" src="../script/doT.min.js"></script>
+    <script type="text/javascript" src="../script/aui2.1/aui-toast.js"></script>
+    <script type="text/javascript" src="../script/jquery-3.3.1.min.js"></script>
+    <script type="text/javascript" src="../script/iscroll.js"></script>
+    <!-- 循环输出商品模板 -->
+    <script id="evaluationtmpl" type="text/x-dot-template">
+        {{ for(var key in it) { }}
+        <li class="goods">
+            <div class="thumb">
+                <img src="{{=it[key].goodsImg}}" alt="图片">
+            </div>
+            <div class="goods-info">
+                <p class="goods-title">{{=it[key].goodsName}}</p>
+                <p class="goods-author">{{=it[key].goodsAuthor}}</p>
+                <p class="goods-price">￥{{=it[key].goodsPrice}}</p>
+                <p>
+                    <div class="aui-btn aui-btn-info addCar" onclick="addCar({{=it[key].goodsId}})">加入购物车</div>
+                </p>
+            </div>
+        </li>
+        {{ } }}
+    </script>
+    <script type="text/javascript">
+        var type = "武侠";
+        var url = $api.getStorage('url');
+
+        apiready = function() {
+            // console.log('home+1');
+            api.parseTapmode();
+            loadData(type);
+        }
+
+        // 创建一个tab对象
+        var tab = new auiTab({
+            element: document.getElementById("tab"),
+        }, function(ret) {
+            // console.log(ret.index);
+            var temp = ret.index;
+            if (temp == 1) {
+                loadData(type);
+            }
+            if (temp == 2) {
+                loadData("科幻");
+            }
+            if (temp == 3) {
+                loadData("社会");
+            }
+            if (temp == 4) {
+                loadData("穿越");
+            }
+
+        });
+        //后台调取数据的函数
+        function loadData(type) {
+            api.ajax({
+                url: url + '/goods/getsByType',
+                method: 'post',
+                data: {
+                    values: {
+                        goodsType: type
+                    }
+                }
+            }, function(ret, err) {
+                if (ret) {
+                    var goods = ret.data;
+                    // console.log(data.data);
+                    var evalText = doT.template($("#evaluationtmpl").text());
+                    $("#goodsLists").html(evalText(goods));
+                    //巨坑，动态列表必须在html结构渲染完成再初始化iscorll能实现滚动
+                    load();
+                } else {
+                    // alert(JSON.stringify(err));
+                }
+            });
+        }
+
+        function load() {
+            var myScroll = new IScroll('#wrapper', {
+                mouseWheel: true,
+                scrollbars: false,
+                click: true,
+                bounce: false
+            });
+        }
+        //创建一个toast对象
+        var toast = new auiToast({})
+            // 使用dialog之前创建该对象
+        var dialog = new auiDialog();
+        //点击加入购物车事件
+        function addCar(goodsId) {
+            // console.log(goodsId);
+            var userDate = $api.getStorage('userDate');
+            if (userDate == '') {
+                //dialog弹窗事件询问是否加入购物车
+                dialog.alert({
+                    title: "未登录",
+                    msg: '是否跳转到登录页面',
+                    buttons: ['取消', '确定']
+                }, function(ret) {
+                    if (ret.buttonIndex == 2) {
+                        OpenLoginWin();
+                    }
+                })
+            } else {
+                // 创建一个对象穿后台
+                // var shopCar = {
+                //     username: $api.getStorage('username'),
+                //     goodsId: goodsId
+                // }
+                // console.log(JSON.stringify(shopCar));
+                var username = userDate.userName;
+                dialog.alert({
+                    title: "亲爱的：" + username,
+                    msg: '是否加入购物车',
+                    buttons: ['取消', '确定']
+                }, function(ret) {
+                    if (ret) {
+                        if (ret.buttonIndex == 2) {
+
+                            //将商品存入数据库
+                            api.ajax({
+                                url: url + '/shopCar/add',
+                                method: 'post',
+                                data: {
+                                    values: {
+                                        username: username,
+                                        goodsId: goodsId
+                                    }
+                                }
+                            }, function(ret, err) {
+                                if (ret) {
+                                    if (ret.code == 0) {
+                                        toast.success({
+                                            title: "加入成功",
+                                            duration: 1000
+                                        });
+                                    }
+                                    if (ret.code == 2) {
+                                        toast.fail({
+                                            title: "存在相同商品",
+                                            duration: 1000
+                                        });
+                                    }
+
+                                } else {
+                                    toast.fail({
+                                        title: "请求异常",
+                                        duration: 1000
+                                    });
+                                }
+                            });
+                        }
+                    }
+                })
+            }
+
+        }
+
+        // 页面跳转到登录页面
+        function OpenLoginWin() {
+            api.openWin({
+                name: 'login',
+                url: './login.html',
+                pageParam: {
+                    name: 'test'
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>

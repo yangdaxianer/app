@@ -1,0 +1,54 @@
+#wrapper {
+  position: relative;
+  overflow: hidden;
+}
+.goods-list {
+  margin-top: 5px;
+  height: 750px;
+}
+.goods-list .goods {
+  display: flex;
+  background-color: #fff;
+  border-radius: 10px;
+  margin-top: 5px;
+}
+.goods-list .goods .thumb {
+  flex: 0 0 100px;
+  padding: 5px;
+  margin: 5px;
+}
+.goods-list .goods .goods-info {
+  flex: 1;
+  margin: 10px;
+  position: relative;
+}
+.goods-list .goods .goods-info .goods-title {
+  font-size: 20px;
+  font-weight: bold;
+  color: #000;
+}
+.goods-list .goods .goods-info .goods-price {
+  margin-top: 10px;
+  font-size: 30px;
+  color: red;
+}
+.goods-list .goods .goods-info .goods-num {
+  margin-top: 10px;
+}
+
+.goods-list .goods .goods-info .addCar {
+  position: absolute;
+  bottom: 5px;
+  right: 15px;
+}
+
+.goods-list .goods .goods-info .ordCar {
+  position: absolute;
+  bottom: 5px;
+  right: 15px;
+}
+.goods-list .goods .goods-info .remCar {
+  position: absolute;
+  bottom: 5px;
+  right: 90px;
+}

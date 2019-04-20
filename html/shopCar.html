@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0" />
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>购物车</title>
+    <link rel="stylesheet" type="text/css" href="../css/aui2.1/aui.css" />
+    <link rel="stylesheet" href="../css/shangpin.css">
+    <style>
+
+    </style>
+</head>
+
+<body>
+    <header class="aui-bar aui-bar-nav" id="aui-header">
+        <div class="aui-title">购物车</div>
+    </header>
+    <!-- 购物车列表 -->
+    <div id="wrapper" class="goods-list" style="height:800px">
+        <ul id="goodsLists">
+
+        </ul>
+    </div>
+
+    <script type="text/javascript" src="../script/api.js"></script>
+    <script type="text/javascript" src="../script/aui2.1/aui-tab.js"></script>
+    <script type="text/javascript" src="../script/aui2.1/aui-dialog.js"></script>
+    <script type="text/javascript" src="../script/doT.min.js"></script>
+    <script type="text/javascript" src="../script/aui2.1/aui-toast.js"></script>
+    <script type="text/javascript" src="../script/jquery-3.3.1.min.js"></script>
+    <script type="text/javascript" src="../script/iscroll.js"></script>
+
+    <!-- 循环输出商品模板 -->
+    <script id="evaluationtmpl" type="text/x-dot-template">
+        {{ for(var key in it) { }}
+        <li class="goods">
+            <div class="thumb">
+                <img src="{{=it[key].img}}" alt="图片">
+            </div>
+            <div class="goods-info">
+                <p class="goods-title">{{=it[key].goodsName}}</p>
+                <p class="goods-author">{{=it[key].goodsAuthor}}</p>
+                <p class="goods-price">￥{{=it[key].goodsPrice}}</p>
+                <p>
+                    <div class="aui-btn aui-btn-danger remCar" onclick="remCar({{=it[key].goodsId}})">移除</div>
+                    <div class="aui-btn aui-btn-info ordCar" onclick="ordCar({{=it[key].goodsId}})">支付</div>
+                </p>
+            </div>
+        </li>
+        {{ } }}
+    </script>
+    <script type="text/javascript">
+        var userDate = '';
+        var username = '';
+        var url = $api.getStorage('url');
+
+        apiready = function() {
+            api.parseTapmode();
+            userDate = $api.getStorage('userDate')
+            username = userDate.userName;
+            // console.log(username);
+            if (userDate != '') {
+                loadData(username);
+            }
+        }
+
+        function load(){
+          var myScroll = new IScroll('#wrapper', {
+              mouseWheel: true,
+              scrollbars: false,
+              click: true
+                  // bounce: true
+          });
+        }
+        //后台调取数据的函数
+        function loadData(username) {
+            api.ajax({
+                url: url+'/shopCar/gets',
+                method: 'post',
+                data: {
+                    values: {
+                        username: username
+                    }
+                }
+            }, function(ret, err) {
+                if (ret) {
+                    var goods = ret.data;
+                    // console.log(data.data);
+                    var evalText = doT.template($("#evaluationtmpl").text());
+                    $("#goodsLists").html(evalText(goods));
+                    load();
+                } else {
+                    alert(JSON.stringify(err));
+                }
+            });
+
+        }
+
+        //创建一个toast对象
+        var toast = new auiToast({})
+            // 使用dialog之前创建该对象
+        var dialog = new auiDialog();
+        //点击移除购物车事件
+        function remCar(goodsId) {
+            dialog.alert({
+                title: "亲爱的：" + username,
+                msg: '是否移除购物车',
+                buttons: ['取消', '确定']
+            }, function(ret) {
+                if (ret) {
+                    if (ret.buttonIndex == 2) {
+                        //将商品存入数据库
+                        api.ajax({
+                            url: url+'/shopCar/del',
+                            method: 'post',
+                            data: {
+                                values: {
+                                    username: username,
+                                    goodsId: goodsId
+                                }
+                            }
+                        }, function(ret, err) {
+                            if (ret) {
+                                var goods = ret.data;
+                                // console.log(data.data);
+                                var evalText = doT.template($("#evaluationtmpl").text());
+                                $("#goodsLists").html(evalText(goods));
+                                load();
+                                toast.success({
+                                    title: "移除成功",
+                                    duration: 1000
+                                });
+                            } else {
+                                toast.fail({
+                                    title: "请求异常",
+                                    duration: 1000
+                                });
+                            }
+                        });
+                    }
+                }
+            })
+
+        }
+
+        //支付
+        function ordCar(goodsId) {
+            dialog.alert({
+                title: "亲爱的：" + username,
+                msg: '是否支付',
+                buttons: ['取消', '确定']
+            }, function(ret) {
+                if (ret) {
+                    if (ret.buttonIndex == 2) {
+                        //将商品存入数据库
+                        api.ajax({
+                            url: url+'/ord/add',
+                            method: 'post',
+                            data: {
+                                values: {
+                                    username: username,
+                                    goodsId: goodsId
+                                }
+                            }
+                        }, function(ret, err) {
+                            if (ret) {
+                                var goods = ret.data;
+                                // console.log(data.data);
+                                var evalText = doT.template($("#evaluationtmpl").text());
+                                $("#goodsLists").html(evalText(goods));
+                                load();
+                                toast.success({
+                                    title: "支付成功",
+                                    duration: 1000
+                                });
+                            } else {
+                                toast.fail({
+                                    title: "请求异常",
+                                    duration: 1000
+                                });
+                            }
+                        });
+                    }
+                }
+            })
+
+        }
+
+        //判断是否登录过，没有登录跳转去登录
+        function isLogin() {
+
+        }
+
+        // 页面跳转到登录页面
+        function OpenLoginWin() {
+            api.openWin({
+                name: 'login',
+                url: './login.html',
+                pageParam: {
+                    name: 'test'
+                }
+            });
+        }
+    </script>
+
+</body>
+
+</html>

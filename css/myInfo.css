@@ -1,0 +1,78 @@
+.myInfo {
+  display: flex;
+  background: #fff;
+  margin: 5px 5px;
+}
+.myInfo .touxiang {
+  flex: 0 0 110px;
+  padding: 5px;
+  margin: 5px;
+}
+.myInfo .touxiang .img {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+}
+.myInfo .my-info {
+  flex: 1;
+}
+.myInfo .my-info .username {
+  font-size: 16px;
+  color: #000;
+  font-weight: bold;
+  position: absolute;
+  top: 70px;
+  left: 130px;
+}
+.myInfo .my-info .phone {
+  position: absolute;
+  top: 100px;
+  left: 130px;
+}
+.myInfo .my-info .address {
+  position: absolute;
+  top: 130px;
+  left: 130px;
+}
+.myInfo .my-info .gear {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  top: 55px;
+  right: 5px;
+}
+.myInfo .my-info .gear .aui-iconfont {
+  font-size: 24px;
+}
+.orderTitle {
+  height: 20px;
+  margin: 5px;
+  padding-left: 25px;
+  font-weight: bold;
+  color: #000;
+}
+.order {
+  position: relative;;
+  overflow: hidden;
+  height: 640px;
+  margin: 10px 5px;
+}
+.order .order-list {
+  display: flex;
+  background-color: #fff;
+  border-radius: 10px;
+  margin-top: 5px;
+}
+.order .order-list .thumb {
+  flex: 0 0 80px;
+  margin-left: 15px;
+  padding: 5px;
+}
+.order .order-list .orderInfo {
+  flex: 1;
+}
+.order .order-list .orderInfo p {
+  font-size: 10px;
+  margin: 10px;
+  padding-left: 20px;
+}

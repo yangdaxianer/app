@@ -1,0 +1,105 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0" />
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>黄金屋书城APP底部导航栏</title>
+    <link rel="stylesheet" type="text/css" href="css/aui2.1/aui.css" />
+</head>
+<body>
+    <footer class="aui-bar aui-bar-tab" id="footer">
+        <div class="aui-bar-tab-item aui-active" tapmode>
+            <i class="aui-iconfont aui-icon-home"></i>
+            <div class="aui-bar-tab-label">首页</div>
+        </div>
+        <!-- <div class="aui-bar-tab-item" tapmode>
+            <i class="aui-iconfont aui-icon-star"></i>
+            <div class="aui-bar-tab-label">收藏</div>
+        </div> -->
+        <div class="aui-bar-tab-item" tapmode>
+            <!-- <div class="aui-badge"></div>	 -->
+            <i class="aui-iconfont aui-icon-cart"></i>
+            <div class="aui-bar-tab-label">购物车</div>
+        </div>
+        <div class="aui-bar-tab-item" tapmode>
+            <!-- <div class="aui-dot"></div> -->
+            <i class="aui-iconfont aui-icon-my"></i>
+            <div class="aui-bar-tab-label">我的</div>
+        </div>
+    </footer>
+
+    <script type="text/javascript" src="./script/api.js"></script>
+    <script type="text/javascript" src="./script/aui2.1/aui-tab.js"></script>
+
+    <script type="text/javascript">
+        // 创建一个storage存储用户状态，生命周期为整个运行期间
+        $api.setStorage('userDate', '');
+
+        //定义一个接口字符串便于修改
+        var urlDev = "http://192.168.43.205";
+        var urlPro = "http://192.168.1.2";
+        $api.setStorage('url',urlDev);
+        // 顶一个接收主要窗口高度的变量
+        var mainHeight = 0;
+        apiready = function() {
+                api.parseTapmode();
+                //获取整个窗口的高度
+                var winHeight = api.winHeight;
+                // console.log(winHeight);
+
+                // 获取底部导航栏高度，并计算出新的页面高度
+                var footer = $api.byId('footer');
+                var footerPosition = $api.offset(footer);
+                // console.log(JSON.stringify(footerPosition));
+                var footerHeight = footerPosition.h;
+                // console.log(footerHeight);
+                mainHeight = winHeight - footerHeight;
+                // console.log(mainHeight);
+                openFram('home', './html/home.html', mainHeight);
+            }
+            // 一个切换fram页面的函数
+        function openFram(name, url, mainHeight) {
+            api.openFrame({
+                name: name,
+                url: url,
+                rect: {
+                    x: 0,
+                    y: 0,
+                    w: 'auto',
+                    h: mainHeight
+                },
+                reload:true,
+                pageParam: {
+                    name: 'test'
+                },
+                bounces: false,
+                bgColor: 'rgba(0,0,0,0)',
+                vScrollBarEnabled: true,
+                hScrollBarEnabled: true
+            });
+
+        }
+
+        var tab = new auiTab({
+            element: document.getElementById("footer")
+        }, function(ret) {
+            // console.log(ret.index);
+            if (ret) {
+                var index = ret.index;
+                if (index == 1) {
+                    openFram('home', './html/home.html', mainHeight);
+                };
+                if (index == 2) {
+                    openFram('shopCar', './html/shopCar.html', mainHeight);
+                };
+                if (index == 3) {
+                    openFram('myInfo', './html/myInfo.html', mainHeight);
+                };
+            }
+        });
+    </script>
+</body>
+
+
+</html>

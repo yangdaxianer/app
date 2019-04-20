@@ -1,0 +1,166 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0" />
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>修改密码</title>
+    <link rel="stylesheet" type="text/css" href="../css/aui2.1/aui.css" />
+</head>
+
+<body>
+    <header class="aui-bar aui-bar-nav" id="aui-header">
+        <a class="aui-btn aui-pull-left" tapmode onclick="closeWin()">
+            <span class="aui-iconfont aui-icon-left"></span>
+        </a>
+        <div class="aui-title">修改密码</div>
+    </header>
+    <div class="aui-content aui-margin-b-15">
+        <ul class="aui-list aui-form-list">
+            <li class="aui-list-header">请输入用户信息</li>
+            <li class="aui-list-item">
+                <div class="aui-list-item-inner">
+                    <div class="aui-list-item-label">
+                        账号：
+                    </div>
+                    <div class="aui-list-item-input">
+                        <input type="text" id="username" placeholder="请输入账号">
+                    </div>
+                </div>
+            </li>
+            <li class="aui-list-item">
+                <div class="aui-list-item-inner">
+                    <div class="aui-list-item-label">
+                        原密码：
+                    </div>
+                    <div class="aui-list-item-input">
+                        <input type="password" id="password" placeholder="请输入密码">
+                    </div>
+                </div>
+            </li>
+            <li class="aui-list-item">
+                <div class="aui-list-item-inner">
+                    <div class="aui-list-item-label">
+                        新密码：
+                    </div>
+                    <div class="aui-list-item-input">
+                        <input type="password" id="password1" placeholder="请输入新密码">
+                    </div>
+                </div>
+            </li>
+            <li class="aui-list-item">
+                <div class="aui-list-item-inner">
+                    <div class="aui-list-item-label">
+                        确认密码：
+                    </div>
+                    <div class="aui-list-item-input">
+                        <input type="password" id="password2" placeholder="请再次输入确保一致">
+                    </div>
+                </div>
+            </li>
+            <li class="aui-list-item">
+                <div class="aui-list-item-inner aui-list-item-center aui-list-item-btn">
+                    <div class="aui-btn aui-btn-info aui-margin-r-5" onclick="submit()">提交</div>
+                    <div class="aui-btn aui-btn-danger aui-margin-l-5" onclick="closeWin()">取消</div>
+                </div>
+            </li>
+        </ul>
+    </div>
+</body>
+<script type="text/javascript" src="../script/api.js"></script>
+<script type="text/javascript" src="../script/aui2.1/aui-range.js"></script>
+<script type="text/javascript" src="../script/aui2.1/aui-toast.js"></script>
+<script type="text/javascript" src="script/aui2.1/aui-tab.js"></script>
+<script type="text/javascript">
+    var url = $api.getStorage('url');
+
+    apiready = function() {
+        api.parseTapmode();
+    };
+    //创建一个toast对象
+    var toast = new auiToast({})
+        //提交按钮
+    function submit() {
+        var password1 = $api.trimAll($api.val($api.byId('password1')));
+        var password2 = $api.trimAll($api.val($api.byId('password2')));
+        var password = $api.trimAll($api.val($api.byId('password')));
+        var username = $api.trimAll($api.val($api.byId('username')));
+        if (username == '') {
+            alert("账号不能为空")
+        } else {
+            if(password1!=password2){
+              alert("新密码两次输入不一致")
+            }else {
+              api.ajax({
+                  url: url+'/user/login',
+                  method: 'post',
+                  data: {
+                      values: {
+                          username: username,
+                          password: password
+                      }
+                  }
+              }, function(ret, err) {
+                  if (ret) {
+                      if (ret.code == 0) {
+                          putDate(username, password2);
+                      }
+                      if (ret.code == 1) {
+                          alert("账号或者原密码错误")
+                      }
+                  } else {
+                      alert(JSON.stringify(err));
+                  }
+              });
+            }
+
+        }
+    }
+
+    function putDate(userName, password) {
+        api.ajax({
+            url: url+'/user/modifyPass',
+            method: 'post',
+            data: {
+                values: {
+                    userName: userName,
+                    password: password
+                }
+            }
+        }, function(ret, err) {
+            if (ret.code == 0) {
+                toast.success({
+                    title: "修改成功",
+                    duration: 1000
+                });
+                clearUser();
+                api.execScript({
+                    name:'root',
+                    frameName: 'myInfo',
+                    script: 'loadOrd("'+userName+'");'
+                });
+                closeWin();
+            } else {
+                toast.fail({
+                    title: "修改失败",
+                    duration: 1000
+                });
+            }
+        });
+
+    }
+
+     //修改密码后userDate变空，重登录
+     function clearUser(){
+       $api.setStorage('userDate', '');
+     }
+
+
+    // 定义一个关闭当前win的函数
+    function closeWin() {
+        api.closeWin({});
+    }
+</script>
+
+</html>

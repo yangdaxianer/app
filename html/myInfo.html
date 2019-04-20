@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0" />
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>我的</title>
+    <link rel="stylesheet" type="text/css" href="../css/aui2.1/aui.css" />
+    <link rel="stylesheet" href="../css/myInfo.css">
+    <style>
+
+    </style>
+</head>
+
+<body class="main">
+    <div class="head">
+        <header class="aui-bar aui-bar-nav" id="aui-header">
+            <div class="aui-title">我的</div>
+        </header>
+        <div id="myInfo" class="myInfo">
+            <!-- <div class="touxiang">
+                <img class="img" src="../image/timg.jpg" alt="图片">
+            </div>
+            <div class="my-info">
+                <p class="username">杨世勋先生</p>
+                <p class="phone"><i class="aui-iconfont aui-icon-mobile"></i>15039103556</p>
+                <p class="address"><i class="aui-iconfont aui-icon-home"></i>河南省郑州市中牟县</p>
+                <div class="gear" tapmode onclick="showPopup('top-right')">
+                    <i class="aui-iconfont aui-icon-gear"></i>
+                </div>
+            </div> -->
+        </div>
+    </div>
+    <div class="orderTitle">我的订单</div>
+
+    <!-- 使用iscorll -->
+    <div id="wrapper" class="order">
+        <ul id="ords">
+            <!-- <li class="order-list">
+                <div class="thumb">
+                    <img src="../image/8947530.jpg" alt="图片">
+                </div>
+                <div class="orderInfo">
+                    <p>订单编号：2019039234</p>
+                    <p>陪孩子遇见美好的自己</p>
+                    <p>总价：￥30远</p>
+                    <p>时间：2019-4-14 14:19</p>
+                </div>
+            </li> -->
+
+        </ul>
+    </div>
+
+    <script type="text/javascript" src="../script/api.js"></script>
+    <script type="text/javascript" src="../script/doT.min.js"></script>
+    <script type="text/javascript" src="../script/aui2.1/aui-popup-new.js"></script>
+    <script type="text/javascript" src="../script/jquery-3.3.1.min.js"></script>
+    <script type="text/javascript" src="../script/iscroll.js"></script>
+    <!-- 输出用户信息 -->
+    <script id="interpolationtmpl" type="text/x-dot-template">
+        <div class="touxiang">
+            <img class="img" src="../image/timg.jpg" alt="图片">
+        </div>
+        <div class="my-info">
+            <p class="username">{{=it.personName}}{{=it.sex}}</p>
+            <p class="phone"><i class="aui-iconfont aui-icon-mobile"></i>{{=it.phone}}</p>
+            <p class="address"><i class="aui-iconfont aui-icon-home"></i>{{=it.address}}</p>
+            <div class="gear" tapmode onclick="showPopup('top-right')">
+                <i class="aui-iconfont aui-icon-gear"></i>
+            </div>
+        </div>
+    </script>
+    <!-- 循环输出订单模板 -->
+    <script id="evaluationtmpl" type="text/x-dot-template">
+        {{ for(var key in it) { }}
+        <li class="order-list">
+            <div class="thumb">
+                <img src="{{=it[key].goodsImg}}" alt="图片">
+            </div>
+            <div class="orderInfo">
+                <p>订单编号：{{=it[key].ordId}}</p>
+                <p>商品：《{{=it[key].goodsName}}》</p>
+                <p>总价：￥{{=it[key].goodsPrice}}元</p>
+                <p>时间：{{=it[key].createTime}}</p>
+            </div>
+        </li>
+        {{ } }}
+    </script>
+    <script type="text/javascript">
+        // 未登录也需要对象渲染不然会导致排版错误
+
+        // $(function () {
+        //     var myScroll = new IScroll('#wrapper', {
+        //         mouseWheel: true,
+        //         scrollbars: false,
+        //         click: false,
+        //         bounce: true
+        //     });
+        // })
+
+        var temp = {
+            personName: "您还未登录，请登录",
+            sex: " ",
+            phone: " ",
+            address: " "
+        }
+
+        var url = $api.getStorage('url');
+
+        apiready = function () {
+            api.parseTapmode();
+            // console.log(JSON.stringify($api.getStorage('userDate')));
+            //如果用户已经登录，将初始化的userDate覆盖；
+            if ($api.getStorage('userDate') == '') {
+                //当userDate为空，赋值临时模板
+                isLogin(temp);
+            }else {
+              userDate = $api.getStorage('userDate');
+              isLogin(userDate);
+              // console.log(userDate);
+              var username = userDate.userName;
+              loadOrd(username);
+            }
+        }
+
+        function isLogin(temp){
+          // 渲染赋值模板,没有登录就赋值这个
+          var interText = doT.template($("#interpolationtmpl").text());
+          $("#myInfo").html(interText(temp));
+        }
+
+
+        var popup = new auiPopup();
+
+        function showPopup(location) {
+            popup.init({
+                frameBounces: false, //当前页面是否弹动，（主要针对安卓端）
+                location: location, //位置，top(默认：顶部中间),top-left top-right,bottom,bottom-left,bottom-right
+                buttons: [{
+                    image: '../image/login-settings.png',
+                    text: '登录',
+                    value: 'login' //可选
+                }, {
+                    image: '../image/person.png',
+                    text: '注册',
+                    value: 'registe' //可选
+                }, {
+                    image: '../image/person.png',
+                    text: '修改个人信息',
+                    value: 'modifyInfo' //可选
+                }, {
+                    image: '../image/yuechi.png',
+                    text: '修改密码',
+                    value: 'modifyPass'
+                }, {
+                    image: '../image/zhanghaozhuxiao.png',
+                    text: '注销退出',
+                    value: '5'
+                }],
+            }, function (ret) {
+                if (ret.buttonIndex == 1) {
+                    openWin(ret.buttonValue);
+                    // document.getElementById("button-index").textContent = ret.buttonIndex;
+                    // document.getElementById("button-value").textContent = ret.buttonValue;
+                }
+                if (ret.buttonIndex == 2) {
+                    openWin(ret.buttonValue);
+                }
+                if (ret.buttonIndex == 3) {
+                    openWin(ret.buttonValue);
+                }
+                if (ret.buttonIndex == 4) {
+                    openWin(ret.buttonValue);
+                }
+                if (ret.buttonIndex == 5) {
+                    var userName = ''
+                    $api.setStorage('userDate', '');
+                    api.execScript({
+                        name:'root',
+                        frameName: 'myInfo',
+                        script: 'loadOrd("'+userName+'");'
+                    });
+                }
+            })
+        }
+
+        //后台调取数据
+        function loadOrd(username) {
+            //渲染登录人信息覆盖未登录状态
+            var userDate = $api.getStorage('userDate');
+            console.log(JSON.stringify(userDate));
+            if(userDate==''){
+              isLogin(temp);
+              var ords =  $api.byId('ords');
+              var ord = {};
+              var evalText = doT.template($("#evaluationtmpl").text());
+              $("#ords").html(evalText(ord));
+              load();
+            }else {
+              isLogin(userDate);
+              console.log(username);
+              // return;
+              api.ajax({
+                  url: url + '/ord/gets',
+                  method: 'post',
+                  data: {
+                      values: {
+                          username: username
+                      }
+                  }
+              }, function (ret, err) {
+                  if (ret) {
+                      //渲染订单信息
+                      var ord = ret.data;
+                      // console.log(JSON.stringify(ord));
+                      var evalText = doT.template($("#evaluationtmpl").text());
+                      $("#ords").html(evalText(ord));
+                      load();
+                  } else {
+                      // alert(JSON.stringify(err));
+                  }
+              });
+            }
+
+        }
+
+        function load(){
+          //巨坑，动态列表必须在html结构渲染完成再初始化iscorll能实现滚动
+          var myScrolla = new IScroll('#wrapper', {
+              mouseWheel: true,
+              scrollbars: false,
+              click: false
+              // bounce: true
+          });
+        }
+
+        // 页面跳转到某个页面
+        function openWin(name) {
+            api.openWin({
+                name: 'name',
+                url: './' + name + '.html',
+                pageParam: {
+                    name: 'test'
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>
